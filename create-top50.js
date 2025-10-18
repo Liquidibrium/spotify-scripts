@@ -1,56 +1,41 @@
-
 import 'dotenv/config'
+import {createPlaylist, getPlaylistTracks, getTopTracks, updatePlaylist} from "./spotify-api.js";
 
-// Authorization token that must have been created previously. See : https://developer.spotify.com/documentation/web-api/concepts/authorization
-const token = process.env.SPOTIFY_TOKEN;
-async function fetchWebApi(endpoint, method, body) {
-  const res = await fetch(`https://api.spotify.com/${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    method,
-    body:JSON.stringify(body)
-  });
-  return await res.json();
+const playlistId = process.env.PLAYLIST_ID;
+
+
+const topTracksPast6Month = await getTopTracks("medium_term");
+const topTracksPastYear = await getTopTracks("Long_term");
+const topTacks = getTopTracksSet();
+console.log("top tracks", topTacks.size)
+
+function getTopTracksSet() {
+    const tracksUri = new Set();
+    topTracksPastYear.forEach(t => tracksUri.add(t.uri))
+    topTracksPast6Month.forEach(t => tracksUri.add(t.uri))
+    return tracksUri;
 }
 
-async function getTopTracks(){
-  // Endpoint reference : https://developer.spotify.com/documentation/web-api/reference/get-users-top-artists-and-tracks
-  return (await fetchWebApi(
-    'v1/me/top/tracks?time_range=long_term&limit=50', 'GET'
-  )).items;
+
+
+async function updatePlaylistWithUniqueTracks() {
+    const tracks = await getPlaylistTracks(playlistId);
+    const playlistTracks = new Set(tracks.map(t => t.track.uri));
+    const tracksToAdd = [];
+    topTacks.forEach(t => {
+        if (!playlistTracks.has(t)) {
+            tracksToAdd.push(t)
+        }
+    })
+    console.log(`${tracksToAdd.length} tracks to add`)
+    if (tracksToAdd.length === 0) {
+        return;
+    }
+    await updatePlaylist(tracksToAdd, playlistId)
 }
 
-const topTracks = await getTopTracks();
 
+await updatePlaylistWithUniqueTracks();
 
-
-async function createPlaylist(tracksUri){
-  const { id: user_id } = await fetchWebApi('v1/me', 'GET')
-
-  const playlist = await fetchWebApi(
-      `v1/users/${user_id}/playlists`, 'POST', {
-        "name": "TT50",
-        "description": "Top Tracks, updated monthly",
-        "public": false
-      })
-
-  await fetchWebApi(
-      `v1/playlists/${playlist.id}/tracks?uris=${tracksUri.join(',')}`,
-      'POST'
-  );
-
-  return playlist;
-}
-
-const tracksUri = topTracks.map( track=> track.uri);
-console.log(
-    topTracks?.map(
-        (track, index) =>
-            `${index}: ${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`,
-    )
-);
-
-
-const createdPlaylist = await createPlaylist(tracksUri);
-console.log(createdPlaylist.name, createdPlaylist.id);
+// const createdPlaylist = await createPlaylist([...topTacks]);
+// console.log(createdPlaylist.name, createdPlaylist.id);
