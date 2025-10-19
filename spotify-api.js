@@ -59,3 +59,19 @@ export async function getPlaylistTracks(playlistId) {
 }
 
 
+export async function getSavedSongs() {
+    let offset = 0;
+    const result = [];
+    do {
+
+    const response = await fetchWebApi(
+        `v1/me/tracks?offset=${offset}`, 'GET')
+        console.log(response);
+        result.push(...response.items);
+        offset += response.offset + response.total;
+    } while (false);
+
+    return result;
+}
+
+

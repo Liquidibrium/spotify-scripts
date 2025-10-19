@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import {createPlaylist, getPlaylistTracks, getTopTracks, updatePlaylist} from "./spotify-api.js";
+import {createPlaylist, getPlaylistTracks, getSavedSongs, getTopTracks, updatePlaylist} from "./spotify-api.js";
 
 const playlistId = process.env.PLAYLIST_ID;
 
@@ -35,7 +35,8 @@ async function updatePlaylistWithUniqueTracks() {
 }
 
 
-await updatePlaylistWithUniqueTracks();
+// await updatePlaylistWithUniqueTracks();
 
+console.log(getSavedSongs())
 // const createdPlaylist = await createPlaylist([...topTacks]);
 // console.log(createdPlaylist.name, createdPlaylist.id);

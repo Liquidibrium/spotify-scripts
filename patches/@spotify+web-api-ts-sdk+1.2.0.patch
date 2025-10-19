@@ -1,0 +1,59 @@
+diff --git a/node_modules/@spotify/web-api-ts-sdk/dist/mjs/auth/AuthorizationCodeWithPKCEStrategy.js b/node_modules/@spotify/web-api-ts-sdk/dist/mjs/auth/AuthorizationCodeWithPKCEStrategy.js
+index 8a601b6..93945d2 100644
+--- a/node_modules/@spotify/web-api-ts-sdk/dist/mjs/auth/AuthorizationCodeWithPKCEStrategy.js
++++ b/node_modules/@spotify/web-api-ts-sdk/dist/mjs/auth/AuthorizationCodeWithPKCEStrategy.js
+@@ -32,13 +32,13 @@ export default class AuthorizationCodeWithPKCEStrategy {
+         this.cache.remove(AuthorizationCodeWithPKCEStrategy.cacheKey);
+     }
+     async redirectOrVerifyToken() {
+-        const hashParams = new URLSearchParams(window.location.search);
+-        const code = hashParams.get("code");
+-        if (code) {
+-            const token = await this.verifyAndExchangeCode(code);
+-            this.removeCodeFromUrl();
+-            return token;
+-        }
++        // const hashParams = new URLSearchParams(window.location.search);
++        // const code = hashParams.get("code");
++        // if (code) {
++        //     const token = await this.verifyAndExchangeCode(code);
++        //     this.removeCodeFromUrl();
++        //     return token;
++        // }
+         this.redirectToSpotify();
+         return emptyAccessToken; // Redirected away at this point, just make TypeScript happy :)
+     }
+diff --git a/node_modules/@spotify/web-api-ts-sdk/dist/mjs/auth/Crypto.js b/node_modules/@spotify/web-api-ts-sdk/dist/mjs/auth/Crypto.js
+index d2c7c8c..97aae19 100644
+--- a/node_modules/@spotify/web-api-ts-sdk/dist/mjs/auth/Crypto.js
++++ b/node_modules/@spotify/web-api-ts-sdk/dist/mjs/auth/Crypto.js
+@@ -1,3 +1,6 @@
++import { createRequire } from 'module';
++const require = createRequire(import.meta.url);
++
+ export class Crypto {
+     static get current() {
+         return this.hasSubtleCrypto ? window.crypto : this.tryLoadNodeWebCrypto();
+@@ -9,7 +12,7 @@ export class Crypto {
+         try {
+             // Deliberately avoid bundling for browsers depending
+             // on node by doing this require during execution.
+-            const { webcrypto } = require('crypto');
++            const webcrypto = require('node:crypto');
+             return webcrypto;
+         }
+         catch (e) {
+diff --git a/node_modules/@spotify/web-api-ts-sdk/dist/mjs/redirection/DocumentLocationRedirectionStrategy.js b/node_modules/@spotify/web-api-ts-sdk/dist/mjs/redirection/DocumentLocationRedirectionStrategy.js
+index 96e97c7..e1fe616 100644
+--- a/node_modules/@spotify/web-api-ts-sdk/dist/mjs/redirection/DocumentLocationRedirectionStrategy.js
++++ b/node_modules/@spotify/web-api-ts-sdk/dist/mjs/redirection/DocumentLocationRedirectionStrategy.js
+@@ -1,6 +1,8 @@
++import open from 'open';
++
+ export default class DocumentLocationRedirectionStrategy {
+     async redirect(targetUrl) {
+-        document.location = targetUrl.toString();
++       await open(targetUrl.toString());
+     }
+     async onReturnFromRedirect() {
+     }
