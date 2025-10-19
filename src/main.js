@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import {getUserAuthenticatedSpotifySdk} from "./SpotifySDK.js";
 import {SpotifyService} from "./spotify-service.js";
-import {getUniqueTrackUris} from "./utils.js";
+import {getUniqueTrackUrisSorted} from "./utils.js";
 
 
 console.log("starting user authentication...");
@@ -12,11 +12,12 @@ console.log("Created sdk");
 const service = new SpotifyService(sdk);
 
 let savedTracks = await service.userSavedTracks();
-let uniqueTrackUris = getUniqueTrackUris(savedTracks);
-console.log(uniqueTrackUris)
+let uniqueTrackUris = getUniqueTrackUrisSorted(savedTracks);
+console.log(uniqueTrackUris.length);
 
 await service.createPlaylist(uniqueTrackUris, {
     name: "Song Dump",
     public: true,
+    description: `Dumpster ${new Date().toISOString()}`,
 })
 console.log(`Song Dump created: ${uniqueTrackUris.length}`)
