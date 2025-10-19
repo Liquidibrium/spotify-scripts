@@ -4,16 +4,26 @@
   "description": "",
   "main": "test.js",
   "scripts": {
+    "start": "npm run build && node src/main.js",
+    "build": "webpack",
+    "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "patch-package"
+    "postinstall12": "patch-package"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7",
+    "webpack": "^5.102.1",
+    "webpack-cli": "^6.0.1"
+  },
   "dependencies": {
     "@spotify/web-api-ts-sdk": "^1.2.0",
     "dotenv": "^17.2.3",
+    "express": "^5.1.0",
     "open": "^10.2.0",
     "patch-package": "^8.0.1"
   }

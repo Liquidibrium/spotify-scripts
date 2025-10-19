@@ -1,6 +1,6 @@
-const token = process.env.SPOTIFY_TOKEN;
+const TOKEN = process.env.SPOTIFY_TOKEN;
 
-async function fetchWebApi(endpoint, method, body) {
+async function fetchWebApi(endpoint, method, {token, body} = {token: TOKEN, body: null}) {
     // Authorization token that must have been created previously. See : https://developer.spotify.com/documentation/web-api/concepts/authorization
     const initRequest = {
         headers: {
@@ -30,9 +30,11 @@ export async function createPlaylist(tracksUri) {
 
     const playlist = await fetchWebApi(
         `v1/users/${user_id}/playlists`, 'POST', {
-            "name": "ToTr",
-            "description": "Top listened Tracks",
-            "public": true
+            body: {
+                "name": "ToTr",
+                "description": "Top listened Tracks",
+                "public": true
+            }
         })
 
     await updatePlaylist(tracksUri, playlist.id)
@@ -53,19 +55,18 @@ export async function getPlaylistTracks(playlistId) {
     const response = await fetchWebApi(
         `v1/playlists/${playlistId}/tracks`, 'GET')
 
-    // todo: add pagination
     console.log(`total items in playlist : ${response.total} LIMIT:${response.limit}`);
     return response.items;
 }
 
 
-export async function getSavedSongs() {
+export async function getSavedSongs(token) {
     let offset = 0;
     const result = [];
     do {
 
-    const response = await fetchWebApi(
-        `v1/me/tracks?offset=${offset}`, 'GET')
+        const response = await fetchWebApi(
+            `v1/me/tracks?offset=${offset}`, 'GET', {token: token})
         console.log(response);
         result.push(...response.items);
         offset += response.offset + response.total;
