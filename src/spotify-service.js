@@ -60,4 +60,22 @@ export class SpotifyService {
 
         return tracks;
     }
+
+    /**
+     *
+     * @return {Promise<import("@spotify/web-api-ts-sdk").Track[]>}
+     */
+    async getTopTracks(timeRange = "medium_term") {
+        let tracks = [];
+        let offset = 0;
+        let stop = false;
+        do {
+            const response = await this.spotifyApi.currentUser.topItems("tracks", timeRange, 50, offset);
+            offset += response.limit;
+            tracks.push(...response.items);
+            stop = response.total < offset;
+        } while (!stop);
+
+        return tracks;
+    }
 }

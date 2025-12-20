@@ -16,16 +16,15 @@
   "type": "module",
   "devDependencies": {
     "typescript": "^5.9.3",
-    "vite": "^7.1.7",
-    "webpack": "^5.102.1",
+    "vite": "^7.3.0",
+    "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "@spotify/web-api-ts-sdk": "^1.2.0",
     "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "freyr": "^0.10.3",
-    "open": "^10.2.0",
+    "express": "^5.2.1",
+    "open": "^11.0.0",
     "patch-package": "^8.0.1"
   }
 }

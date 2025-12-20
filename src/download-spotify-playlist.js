@@ -109,7 +109,7 @@ async function processPlaylist(playlist) {
     }
 }
 
-for (const playlist of playlists.filter(p => p.name === ".. Ever After" || p.name === "Perfect Circles")) {
+for (const playlist of playlists) {
     await processPlaylist(playlist)
 }
 
