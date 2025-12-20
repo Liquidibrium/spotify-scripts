@@ -27,9 +27,7 @@ yt-dlp \
             // extract filename from stdout
             const match = RegExp(/^\[ExtractAudio] Destination: (.+)$/m).exec(stdout);
             if (match?.[1]) {
-                const filename = match[1];
-                console.log("Downloaded file:", filename);
-                resolve(filename);
+                resolve(match[1]);
             }
         });
     })
