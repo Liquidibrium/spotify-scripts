@@ -17,13 +17,7 @@ export class SpotifyService {
         do {
             let response = await this.spotifyApi.currentUser.tracks.savedTracks(50, offset);
             offset += response.limit;
-            console.log({
-                tracks: response.items.length,
-                newOffset: offset
-            })
             tracks.push(...response.items);
-
-
             stop = response.total < offset;
         } while (!stop);
 
@@ -42,5 +36,28 @@ export class SpotifyService {
             const lastIndex = batch_index + 50 < tracksUris.length ? batch_index + 50 : tracksUris.length;
             await this.spotifyApi.playlists.addItemsToPlaylist(newPlaylist.id, tracksUris.slice(batch_index, lastIndex));
         }
+    }
+
+    async listUserPlaylists() {
+        const userProfile = await this.spotifyApi.currentUser.playlists.playlists();
+        return userProfile.items;
+    }
+
+    /**
+     *
+     * @return {Promise<import("@spotify/web-api-ts-sdk").PlaylistedTrack[]>}
+     */
+    async listPlaylistTracks(playlistId) {
+        let tracks = [];
+        let offset = 0;
+        let stop = false;
+        do {
+            let response = await this.spotifyApi.playlists.getPlaylistItems(playlistId, "NA", undefined, 50, offset)
+            offset += response.limit;
+            tracks.push(...response.items);
+            stop = response.total < offset;
+        } while (!stop);
+
+        return tracks;
     }
 }

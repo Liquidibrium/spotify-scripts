@@ -15,11 +15,13 @@ export function getUniqueTrackUrisSorted(tracks) {
         });
 
     const set = new Set();
+    const sortedTracks = []
     sorted.forEach(t => {
         if (set.has(t.track.uri)) {
             return;
         }
+        sortedTracks.push(t.track.uri);
         set.add(t.track.uri);
     })
-    return [...set];
+    return sortedTracks;
 }

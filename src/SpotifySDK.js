@@ -33,6 +33,7 @@ export async function getUserAuthenticatedSpotifySdk() {
             console.log(token);
 
             res.send("Successfully authenticated!");
+            // server.close();
         });
         app.get('/env.js', (req, res) => {
             res.set('Content-Type', 'application/javascript');
