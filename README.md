@@ -14,7 +14,20 @@ npm install
 ## Usage
 download a Spotify playlist and convert it to audio files:
 ```shell
-node src/download-spotify-playlist.js
+node src/download-spotify.js --help         
+Usage: fetcher-cli [options]
+
+Process playlists, albums, and tracks
+
+Options:
+  --playlist <name>   Playlist name
+  --album <name>      Album name name|artist
+  --track <track>     Track in format name|artist
+  --allPlaylists      Process all playlists (default: false)
+  --spotifyUrl <url>  Spotify URL to process
+  --verbose           Enable verbose logging (default: false)
+  -h, --help          display help for command
+
 ```
 To create a playlist from liked tracks on Spotify:
 ```shell

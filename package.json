@@ -24,6 +24,7 @@
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@spotify/web-api-ts-sdk": "^1.2.0",
     "cli-progress": "^3.12.0",
+    "commander": "^14.0.2",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "fluent-ffmpeg": "^2.1.3",

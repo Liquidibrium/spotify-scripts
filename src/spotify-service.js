@@ -42,6 +42,32 @@ export class SpotifyService {
         return playlists;
     }
 
+    async findAlbum(albumName, artistName) {
+        const query = `album:${albumName} artist:${artistName}`;
+        const response = await this.spotifyApi.search(query, ["album"], "NA", 1, 0);
+        if (response.albums.items.length > 0) {
+            return this.spotifyApi.albums.get(response.albums.items[0].id);
+        }
+        return null;
+    }
+
+    async findTrack(trackName, artistName) {
+        const query = `track:${trackName} artist:${artistName}`;
+        const response = await this.spotifyApi.search(query, ["track"], "NA", 1, 0);
+        return response.tracks.items.length > 0 ? response.tracks.items[0] : null;
+    }
+
+    async getPlaylistById(id) {
+        return this.spotifyApi.playlists.getPlaylist(id);
+    }
+
+    async getAlbumById(id) {
+        return this.spotifyApi.albums.get(id);
+    }
+
+    async getTrackById(id) {
+        return this.spotifyApi.tracks.get(id);
+    }
 
     /**
      *
@@ -49,6 +75,15 @@ export class SpotifyService {
      */
     async listPlaylistTracks(playlistId) {
         const fetchPage = (limit, offset) => this.spotifyApi.playlists.getPlaylistItems(playlistId, "NA", undefined, limit, offset);
+        const tracks = [];
+        for await (const track of pagedIterator(fetchPage)) {
+            tracks.push(track);
+        }
+        return tracks;
+    }
+
+    async listAlbumTracks(albumId) {
+        const fetchPage = (limit, offset) => this.spotifyApi.albums.tracks(albumId, "NA", limit, offset);
         const tracks = [];
         for await (const track of pagedIterator(fetchPage)) {
             tracks.push(track);

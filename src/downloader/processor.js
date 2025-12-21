@@ -1,57 +1,7 @@
-import {downloadYoutubeAudio} from "../youtube-audio.js";
-import fs from "node:fs";
-import fetchLyricsFromLRCLib from "../lyrics.js";
 import {updateTrackMedata} from "../ffmpeg-utils.js";
-
-async function getYoutubeLink(spotify_url) {
-    console.log("fetching youtube link from song.link for", spotify_url);
-    const api_song_link = `https://api.song.link/v1-alpha.1/links?url=${spotify_url}`;
-    let response = await fetch(api_song_link);
-    let data = await response.json();
-    return data.linksByPlatform?.youtube?.url;
-}
-
-
-async function downloadAudio(track, folder, trackName) {
-    const youtubeLink = await getYoutubeLink(track.external_urls.spotify);
-    if (youtubeLink) {
-        try {
-            return await downloadYoutubeAudio(youtubeLink, folder, trackName);
-        } catch (error) {
-            console.error("could not download", youtubeLink, error);
-        }
-    } else {
-        console.error(`No youtube link found for ${track.name} by ${track.artists.map(artist => artist.name).join(", ")}`);
-    }
-    return null;
-}
-
-async function downloadAlbumArt(track, folder, trackName) {
-    console.log(`Downloading album for ${trackName}`);
-    const albumImages = track.album.images?.map(image => image.url)
-    // get second image if not exists get first image
-    const index = albumImages.length > 1 ? 1 : 0;
-    if (albumImages?.length === 0) {
-        return null;
-    }
-    const imageUrl = albumImages[index];
-    const response = await fetch(imageUrl);
-    const buffer = await response.arrayBuffer();
-    const file = `${folder}/${trackName}.jpg`;
-    fs.writeFileSync(file, Buffer.from(buffer));
-    return file;
-}
-
-async function downloadLyrics(track, folder, trackName) {
-    console.log(`Downloading lyrics for ${trackName}`);
-    const lyrics = await fetchLyricsFromLRCLib(track.artists[0].name, track.name);
-    const file = `${folder}/${trackName}.lrc`;
-    if (lyrics) {
-        fs.writeFileSync(file, lyrics);
-        return file;
-    }
-    return null;
-}
+import {downloadAlbumArt, downloadAudio, downloadLyrics} from "./fetcher.js";
+import fs from "node:fs";
+import cliProgress from "cli-progress";
 
 /**
  *
@@ -60,9 +10,8 @@ async function downloadLyrics(track, folder, trackName) {
  * @return {Promise<void>}
  */
 export async function processTrack(track, folder) {
-    // await sleep(1)
     let trackName = `${track.name.trim()} - ${track.artists.map(artist => artist.name.trim()).join(", ")}`;
-    console.log(`Downloading ${trackName}`);
+    console.log(`Processing track ${trackName}`);
     const songFile = await downloadAudio(track, folder, trackName);
     if (!songFile) {
         console.error(`Failed to download ${trackName}`);
@@ -81,5 +30,102 @@ export async function processTrack(track, folder) {
 
     // Updating track metadata
     await updateTrackMedata(track, songFile, albumCoverFile, lyricsFile);
-    console.log(`Finished ${trackName}`);
+    console.log(`Processed track ${track.name}`);
+}
+
+/**
+ *
+ * @param service {SpotifyService}
+ * @param playlist {import("@spotify/web-api-ts-sdk").Playlist}
+ * @return {Promise<void>}
+ */
+export async function processPlaylist(service, playlist) {
+    // create directory if not exists recursively with playlist name
+    console.log(`Processing playlist ${playlist.name}`);
+    const directory = `./downloads/playlists/${playlist.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
+    fs.mkdirSync(directory, {recursive: true});
+
+    const playlistTracks = await service.listPlaylistTracks(playlist.id);
+    // Initialize progress bar
+    const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+    progressBar.start(playlistTracks.length, 0);
+
+    for (const [index, item] of playlistTracks.entries()) {
+        await processTrack(item.track, directory);
+        progressBar.update(index + 1); // Update progress bar
+        console.log("\n");
+    }
+
+    progressBar.stop(); // Stop progress bar
+    console.log(`Processed playlist ${playlist.name}`);
+}
+
+
+/**
+ *
+ * @param service { SpotifyService}
+ * @param album {import("@spotify/web-api-ts-sdk").Album}
+ * @return {Promise<void>}
+ */
+export async function processAlbum(service, album) {
+    // create directory if not exists recursively with album name
+    console.log(`Processing album ${album.name}`);
+    const directory = `./downloads/albums/${album.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
+    fs.mkdirSync(directory, {recursive: true});
+
+    const albumTracks = await service.listAlbumTracks(album.id);
+    // Initialize progress bar
+    const progressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+    progressBar.start(albumTracks.length, 0);
+
+    for (const [index, item] of albumTracks.entries()) {
+        await processTrack(item.track, directory);
+        progressBar.update(index + 1); // Update progress bar
+        console.log("\n");
+    }
+
+    progressBar.stop(); // Stop progress bar
+    console.log(`Processed album ${album.name}`);
+}
+
+
+/**
+ *
+ * @param service { SpotifyService}
+ * @param url
+ * @return {Promise<void>}
+ */
+export async function processSpotifyUrl(service, url) {
+    console.log(`Processing Spotify URL: ${url}`);
+    const urlObj = new URL(url);
+    const paths = urlObj.pathname.split("/").filter(p => p);
+    if (paths.length < 2) {
+        console.error(`Invalid Spotify URL: ${url}`);
+        return;
+    }
+    const [type, id] = paths;
+    if (type === "playlist") {
+        const playlist = await service.getPlaylistById(id)
+        if (playlist) {
+            await processPlaylist(service, playlist);
+        } else {
+            console.error(`Playlist with ID ${id} not found`);
+        }
+    } else if (type === "album") {
+        const album = await service.getAlbumById(id);
+        if (album) {
+            await processAlbum(service, album);
+        } else {
+            console.error(`Album with ID ${id} not found`);
+        }
+    } else if (type === "track") {
+        const track = await service.getTrackById(id);
+        if (track) {
+            await processTrack(track, "./downloads/singles");
+        } else {
+            console.error(`Track with ID ${id} not found`);
+        }
+    } else {
+        console.error(`Unsupported Spotify URL type: ${type}`);
+    }
 }
