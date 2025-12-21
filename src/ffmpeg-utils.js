@@ -51,14 +51,24 @@ export async function updateTrackMedata(track, songFile, albumCoverFile, lyricsF
         if (track.album.genres?.length > 0) {
             options.push(`-metadata`, `genre=${track.album.genres.join(", ")}`);
         }
-        command
-            .outputOptions(...options);
 
         // Add album cover if available
         if (albumCoverFile) {
-            command.input(albumCoverFile).outputOptions("-map", "0", "-map", "1", "-c", "copy", "-id3v2_version", "3");
+            command.input(albumCoverFile);
+            options.push(
+                "-map", "0:a",
+                "-map", "1:v",
+                "-c:a", "copy",
+                "-c:v", "mjpeg",
+                "-id3v2_version", "3",
+                "-metadata:s:v", "title=Album cover",
+                "-metadata:s:v", "comment=Cover (front)",
+                "-disposition:v", "attached_pic"
+            );
         }
 
+        command
+            .outputOptions(...options);
 
         // Save the updated file
         const outputFile = songFile.replace(/\.([^.]*)$/, "_updated.$1");

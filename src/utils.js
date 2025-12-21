@@ -1,6 +1,3 @@
-
-
-
 /**
  * @param {import("@spotify/web-api-ts-sdk").SavedTrack[]} tracks
  */
@@ -8,7 +5,7 @@ export function getUniqueTrackUrisSorted(tracks) {
     const sorted = [...tracks].toSorted(
         (a, b) => {
             const compare = b.track.album.artists?.[0]?.name.localeCompare(b.track.album.artists?.[0]?.name);
-            if(compare !== 0) {
+            if (compare !== 0) {
                 return compare;
             }
             return b.track.album.name.localeCompare(b.track.album.name)
@@ -24,4 +21,9 @@ export function getUniqueTrackUrisSorted(tracks) {
         set.add(t.track.uri);
     })
     return sortedTracks;
+}
+
+
+export function sleep(seconds) {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }
