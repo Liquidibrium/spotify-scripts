@@ -35,9 +35,9 @@ async function downloadAudio(track, folder, trackName) {
     const youtubeLink = await getYoutubeLink(track.external_urls.spotify);
     if (youtubeLink) {
         try {
-            return downloadYoutubeAudio(youtubeLink, folder, trackName);
+            return await downloadYoutubeAudio(youtubeLink, folder, trackName);
         } catch (error) {
-            console.error(error);
+            console.error("could not download", youtubeLink, error);
         }
     } else {
         console.error(`No youtube link found for ${track.name} by ${track.artists.map(artist => artist.name).join(", ")}`);
@@ -92,7 +92,7 @@ async function processTrack(track, folder) {
         external_ids: track.external_ids,
         genres: track.album.genres,
     })
-    let trackName = `${track.name} - ${track.artists.map(artist => artist.name).join(", ")}`;
+    let trackName = `${track.name.trim()} - ${track.artists.map(artist => artist.name.trim()).join(", ")}`;
     console.log(`Downloading ${trackName}`);
     const songFile = await downloadAudio(track, folder, trackName);
     if (!songFile) {
@@ -143,11 +143,25 @@ async function processPlaylist(playlist) {
     progressBar.stop(); // Stop progress bar
 }
 
-for (const playlist of playlists) {
-    await processPlaylist(playlist)
+// if playlist name is given in args process only that playlist
+const args = process.argv.slice(2);
+if (args.length > 0) {
+    const playlistName = args[0];
+    const playlist = playlists.find(p => p.name.toLowerCase() === playlistName.toLowerCase());
+    if (playlist) {
+        await processPlaylist(playlist);
+        console.log(`listed playlist ${playlist.name}`);
+        process.exit(0);
+    } else {
+        console.error(`Playlist ${playlistName} not found`);
+        process.exit(1);
+    }
 }
 
-console.log(`listed all ${playlists.length} playlists`);
-process.exit(0);
+// for (const playlist of playlists) {
+//     await processPlaylist(playlist)
+// }
+// console.log(`listed all ${playlists.length} playlists`);
+process.exit(1);
 
 

@@ -9,7 +9,7 @@ yt-dlp \
   --audio-format flac \
   --audio-quality 0 \
   --embed-metadata --embed-thumbnail \
-  -o "${directory}/%(artist)s - %(title)s.%(ext)s" \
+  -o "${directory}/%(title)s - %(artist)s.%(ext)s" \
   "${youtubeUrl}"
 `;
 
