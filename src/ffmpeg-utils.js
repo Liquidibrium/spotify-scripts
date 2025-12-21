@@ -1,5 +1,6 @@
 import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+import * as fs from "node:fs";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
@@ -27,7 +28,7 @@ export async function readTrackMetadata(songFile) {
  * @param songFile {string}
  * @param albumCoverFile {string | null}
  * @param lyricsFile {string | null}
- * @return {Promise<void>}
+ * @return {Promise<string>}
  */
 export async function updateTrackMedata(track, songFile, albumCoverFile, lyricsFile) {
     return new Promise((resolve, reject) => {
@@ -64,8 +65,9 @@ export async function updateTrackMedata(track, songFile, albumCoverFile, lyricsF
         command
             .save(outputFile)
             .on("end", () => {
-                console.log(`Updated metadata for ${track.name}`);
-                resolve();
+                // replace original file with updated file
+                fs.renameSync(outputFile, songFile);
+                resolve(songFile);
             })
             .on("error", (err) => {
                 console.error(`Failed to update metadata for ${track.name}:`, err);

@@ -94,6 +94,7 @@ async function processTrack(track, folder) {
         images: track.images?.map(image => image.url),
         url: track.external_urls.spotify,
         external_ids: track.external_ids,
+        genres: track.album.genres,
     })
     let trackName = `${track.name} - ${track.artists.map(artist => artist.name).join(", ")}`;
     console.log(`Downloading ${trackName}`);
