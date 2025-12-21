@@ -1,0 +1,75 @@
+import ffmpeg from "fluent-ffmpeg";
+import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
+
+ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+
+/**
+ * Reads the metadata of a song file.
+ * @param {string} songFile - The path to the song file.
+ * @return {Promise<object>} - The metadata of the song file.
+ */
+export async function readTrackMetadata(songFile) {
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(songFile, (err, metadata) => {
+            if (err) {
+                console.error(`Failed to read metadata for ${songFile}:`, err);
+                reject(err);
+            } else {
+                resolve(metadata);
+            }
+        });
+    });
+}
+
+/**
+ *
+ * @param track {import("@spotify/web-api-ts-sdk").TrackItem}
+ * @param songFile {string}
+ * @param albumCoverFile {string | null}
+ * @param lyricsFile {string | null}
+ * @return {Promise<void>}
+ */
+export async function updateTrackMedata(track, songFile, albumCoverFile, lyricsFile) {
+    return new Promise((resolve, reject) => {
+        console.log(`updating medata for ${songFile}`);
+        const command = ffmpeg(songFile);
+
+        const options = [
+            `-metadata`, `title=${track.name}`,
+            `-metadata`, `artist=${track.artists[0].name}`,
+            `-metadata`, `album=${track.album.name}`,
+            `-metadata`, `album_artist=${track.album.artists.map(artist => artist.name).join(", ")}`,
+            `-metadata`, `tracks_artist=${track.artists.map(artist => artist.name).join(", ")}`,
+            `-metadata`, `date=${track.album.release_date}`,
+            `-metadata`, `track=${track.track_number}`,
+            `-metadata`, `total_tracks=${track.album.total_tracks}`,
+            `-metadata`, `disc=${track.disc_number}`,
+            `-metadata`, `isrc=${track.external_ids?.isrc || ""}`,
+        ];
+
+        if (track.album.genres?.length > 0) {
+            options.push(`-metadata`, `genre=${track.album.genres.join(", ")}`);
+        }
+        command
+            .outputOptions(...options);
+
+        // Add album cover if available
+        if (albumCoverFile) {
+            command.input(albumCoverFile).outputOptions("-map", "0", "-map", "1", "-c", "copy", "-id3v2_version", "3");
+        }
+
+
+        // Save the updated file
+        const outputFile = songFile.replace(/\.([^.]*)$/, "_updated.$1");
+        command
+            .save(outputFile)
+            .on("end", () => {
+                console.log(`Updated metadata for ${track.name}`);
+                resolve();
+            })
+            .on("error", (err) => {
+                console.error(`Failed to update metadata for ${track.name}:`, err);
+                reject(err);
+            });
+    });
+}

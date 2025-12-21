@@ -13,6 +13,7 @@ yt-dlp \
 `;
 
     return new Promise((resolve, reject) => {
+        console.log(`Downloading youtube audio: ${youtubeUrl}`);
         exec(command, (error, stdout, stderr) => {
             if (error) {
                 console.error("Error:", error.message);
@@ -20,15 +21,21 @@ yt-dlp \
                 return;
             }
             if (stderr) {
-                console.error("yt-dlp stderr:", stderr);
-                reject(new Error(stderr));
-                return;
+                if (stderr.includes("WARNING")) {
+                    console.warn("yt-dlp warning:", stderr);
+                } else {
+                    console.error("yt-dlp stderr:", stderr);
+                    reject(new Error(stderr));
+                    return;
+                }
             }
             // extract filename from stdout
             const match = RegExp(/^\[ExtractAudio] Destination: (.+)$/m).exec(stdout);
             if (match?.[1]) {
                 resolve(match[1]);
+                return;
             }
+            reject(new Error("no file destination found: " + match));
         });
     })
 }
