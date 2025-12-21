@@ -35,11 +35,7 @@ async function downloadAudio(track, folder, trackName) {
     const youtubeLink = await getYoutubeLink(track.external_urls.spotify);
     if (youtubeLink) {
         try {
-            let filename = await downloadYoutubeAudio(youtubeLink, folder);
-            let extension = filename?.split('.').pop();
-            const file = `${folder}/${trackName}.${extension}`;
-            fs.renameSync(filename, file);
-            return file;
+            return downloadYoutubeAudio(youtubeLink, folder, trackName);
         } catch (error) {
             console.error(error);
         }
@@ -147,7 +143,7 @@ async function processPlaylist(playlist) {
     progressBar.stop(); // Stop progress bar
 }
 
-for (const playlist of playlists.filter(p => p.name === "Perfect Circles")) {
+for (const playlist of playlists) {
     await processPlaylist(playlist)
 }
 

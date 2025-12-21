@@ -1,7 +1,8 @@
 import {exec} from "child_process";
+import * as fs from "node:fs";
 
 
-export async function downloadYoutubeAudio(youtubeUrl, directory) {
+export async function downloadYoutubeAudio(youtubeUrl, directory, trackName) {
     const command = `
 yt-dlp \
   -x \
@@ -32,7 +33,16 @@ yt-dlp \
             // extract filename from stdout
             const match = RegExp(/^\[ExtractAudio] Destination: (.+)$/m).exec(stdout);
             if (match?.[1]) {
-                resolve(match[1]);
+                const filename = match[1];
+                let extension = filename?.split('.').pop();
+                const file = `${directory}/${trackName}.${extension}`;
+                try {
+                    fs.renameSync(filename, file);
+                    resolve(file);
+                } catch (error) {
+                    console.error(error, "\nOUTPUT:\n", stdout);
+                    reject(error)
+                }
                 return;
             }
             reject(new Error("no file destination found: " + match));
