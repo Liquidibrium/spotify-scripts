@@ -1,6 +1,10 @@
 ## Setup Instructions
 
 ### Prerequisites
+#### Spotify
+* Create app: https://developer.spotify.com/documentation/web-api/concepts/apps
+* Callback urls: http://127.0.0.1:3000, http://127.0.0.1:3000/callback
+* Copy secret keys
 
 ```shell
 
@@ -13,7 +17,8 @@ npm install
 
 ## Usage
 download a Spotify playlist and convert it to audio files:
-Example: `node src/download-spotify.js --spotifyUrl <spotify album|track|playlist url> `
+
+`node src/download-spotify.js --spotifyUrl <spotify album|track|playlist url> `
 
 ```shell
 node src/download-spotify.js --help         
@@ -31,6 +36,11 @@ Options:
   -h, --help          display help for command
 
 ```
+Example:
+```shell
+node src/download-spotify.js --spotifyUrl https://open.spotify.com/track/0Ppd0oDauQpaQgNvpHzq24
+```
+
 To create a playlist from liked tracks on Spotify:
 ```shell
 node src/likes-songs-playlist.js
