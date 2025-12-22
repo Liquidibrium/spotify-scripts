@@ -82,6 +82,11 @@ export class SpotifyService {
         return tracks;
     }
 
+    /**
+     *
+     * @param albumId
+     * @return {Promise<import("@spotify/web-api-ts-sdk").SimplifiedTrack[]>}
+     */
     async listAlbumTracks(albumId) {
         const fetchPage = (limit, offset) => this.spotifyApi.albums.tracks(albumId, "NA", limit, offset);
         const tracks = [];

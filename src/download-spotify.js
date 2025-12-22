@@ -16,7 +16,7 @@ program
     .name("fetcher-cli")
     .description("Process playlists, albums, and tracks")
     .option("--playlist <name>", "Playlist name", collect)
-    .option("--album <name>", "Album name name|artist", collect)
+    .option("--album <name>", "Album in format name|artist", collect)
     .option("--track <track>", "Track in format name|artist", collect)
     .option("--allPlaylists", "Process all playlists", false)
     .option("--spotifyUrl <url>", "Spotify URL to process", collect)

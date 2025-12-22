@@ -79,7 +79,11 @@ export async function processAlbum(service, album) {
     progressBar.start(albumTracks.length, 0);
 
     for (const [index, item] of albumTracks.entries()) {
-        await processTrack(item.track, directory);
+        await processTrack({
+            ...item,
+            album,
+            external_ids: {}
+        }, directory);
         progressBar.update(index + 1); // Update progress bar
         console.log("\n");
     }

@@ -13,6 +13,8 @@ npm install
 
 ## Usage
 download a Spotify playlist and convert it to audio files:
+Example: `node src/download-spotify.js --spotifyUrl <spotify album|track|playlist url> `
+
 ```shell
 node src/download-spotify.js --help         
 Usage: fetcher-cli [options]
@@ -21,7 +23,7 @@ Process playlists, albums, and tracks
 
 Options:
   --playlist <name>   Playlist name
-  --album <name>      Album name name|artist
+  --album <name>      Album in format name|artist
   --track <track>     Track in format name|artist
   --allPlaylists      Process all playlists (default: false)
   --spotifyUrl <url>  Spotify URL to process
